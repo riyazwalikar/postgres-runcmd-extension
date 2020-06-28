@@ -23,6 +23,13 @@ Then from within Postgres, run the following to setup the functions
 
 ```
 CREATE EXTENSION runcmd;
+CREATE OR REPLACE FUNCTION runcmd(TEXT) RETURNS INTEGER AS 'runcmd.so', 'pg_runcmd' LANGUAGE 'C' WITH (ISSTRICT);
+```
+
+Once the extension is loaded and the function is created, you can call the function like this
+
+```
+SELECT pg_runcmd('id');
 ```
 
 ## Important note

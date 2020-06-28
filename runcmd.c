@@ -3,6 +3,7 @@ Riyaz Walikar
 https://ibreak.software
 */
 
+#include <stdlib.h>
 #include "postgres.h"
 #include "fmgr.h"
 #include <utils/builtins.h>
@@ -37,23 +38,16 @@ void _PG_fini(void)
 Datum pg_runcmd(PG_FUNCTION_ARGS)
 {
 
-    char buf[BUFSIZE];
-    char *command = TextDatumGetCString() //figure out how to pass command here?
-    FILE *fp;
+    char *command = PG_GETARG_TEXT_P(0);
+    int cmdlen = VARSIZE(command) - VARHDRSZ;
+    char *c = (char *) palloc(cmdlen + 1);
+    int32 retval = 0;
+    memcpy(c, VARDATA(command), cmdlen);
 
-    if ((fp = popen(command, "r")) == NULL) {
-        printf("Error opening pipe!\n");
-        return -1;
-    }
+    c[cmdlen]='\0';
 
-    while (fgets(buf, BUFSIZE, fp) != NULL) {
-        //printf("%s", buf);
-    }
+    retval = system(c);
 
-    if(pclose(fp))  {
-        printf("Command not found or exited with error status\n");
-        return -1;
-    }
-
-	return buf;
+    pfree(c);
+    PG_RETURN_INT32(retval);
 }
